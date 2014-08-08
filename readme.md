@@ -117,7 +117,7 @@ custId      | The ID of this customer. Assigned when the recurring payment was c
 amount      | The amount to charge on each recurrence. Assigned when the recurring payment was created (no trailing zeros)
 start       | The date this recurring payment was set up (YYYY-MM-DD)
 
-recurringPayment objects consist of:
+#### recurringPayment Object
 
 Key         | Description
 ----------- | -----------
@@ -140,7 +140,7 @@ custId      | The ID of this customer. Assigned when the payment was created
 amount      | The amount the customer was charged for this payment
 start       | The date this payment was set up (YYYY-MM-DD)
 
-Payment objects consist of: 
+#### payment Object
 
 Key         | Description
 ----------- | -----------
@@ -176,7 +176,7 @@ recurrence  | A recurrence object (omit for a single non-recurring payment)
 card        | A credit card object
 ach         | An ach object
 
-Billing objects:
+#### billing Object
 
 Attributes  | Description
 ----------- | -----------
@@ -188,7 +188,7 @@ state       | State (optional)
 zip         | Zip
 email       | Email address (to send receipt to) (optional)
 
-Recurrence objects: 
+#### recurrence Objects: 
 
 Attributes  | Description
 ----------- | -----------
@@ -197,7 +197,7 @@ start       | When the first payment should occur (YYYY-MM-DD) ("next" for the n
 number      | The number of times to repeat this payment
 
 
-Credit card objecs:
+#### Credit card Object:
 
 Attributes  | Description
 ----------- | -----------
@@ -207,7 +207,7 @@ year        | Expiration year
 verificationValue | CVV verification code on the back of the card
 type        | type of card (E.G visa, mastercard, discovery)
 
-ACH objects:
+#### ACH Object:
 
 Attributes  | Description
 ----------- | -----------
@@ -221,7 +221,7 @@ recordType  | Record type of electronic check transaction, not supported by all 
 frontImage  | Image of the front of the check (optional)
 backImage   | Image of the back of the check (optional)
 
-Payment response objects:
+#### paymentResponse Object:
 
 Attributes  | Description
 ----------- | -----------
