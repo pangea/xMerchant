@@ -1,3 +1,4 @@
 enyo.depends(
-  "xMerchant.js"
+  "xmerchant",
+  "paysimple_gateway"
 );
