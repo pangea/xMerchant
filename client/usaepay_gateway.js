@@ -6,14 +6,14 @@
       // soapUrl = "https://sandbox.usaepay.com/soap/gate/DFBAABC3";
       // soapUrl = "https://www.usaepay.com/soap/gate/48F672CB/usaepay.wsdl"; //TODO: update for prod 
   
-  function PaysimpleGateway(){
+  function UsaepayGateway(){
   }
 
-  PaysimpleGateway.prototype.key = function(key){
+  UsaepayGateway.prototype.key = function(key){
     this.UMkey = key;
   };
 
-  PaysimpleGateway.prototype.pin = function(pin){
+  UsaepayGateway.prototype.pin = function(pin){
     this.pin = pin;
   };
 
@@ -21,7 +21,7 @@
    * Gets the sha hash based on the Source Key, seed, and pin
    * @return {Object} contains both seed and hash
    */
-  PaysimpleGateway.prototype.getShaHash = function(){
+  UsaepayGateway.prototype.getShaHash = function(){
     // get the sha hash from key, seed, and pin
     var seed = Math.round(parseFloat(helpers.random(1))*1000),
         clear = this.UMkey + seed + this.pin,
@@ -37,7 +37,7 @@
    * appends our auth token to your args, calls the queryFunction through soap,
    * then passes any errors and the results to the callback function
    */ 
-  PaysimpleGateway.prototype.makeSoapQuery = function(args, queryFunction,callback){
+  UsaepayGateway.prototype.makeSoapQuery = function(args, queryFunction,callback){
     var shaHash = this.getShaHash();
 
     args.Token = {
@@ -68,7 +68,7 @@
     });    
   };
 
-  PaysimpleGateway.prototype.normalizeRecurringPayment = function(responses){
+  UsaepayGateway.prototype.normalizeRecurringPayment = function(responses){
     var ret = [];
     // Check if there is a result
     if (responses[0]){
@@ -96,7 +96,7 @@
     return ret;
   };
 
-  PaysimpleGateway.prototype.searchRecurringPayments= function(params,callback){
+  UsaepayGateway.prototype.searchRecurringPayments= function(params,callback){
     var searchParams = [];
     if (params.custId){
       searchParams.push({
@@ -144,7 +144,7 @@
     });
   };
 
-  PaysimpleGateway.prototype.normalizePayment = function(responses){
+  UsaepayGateway.prototype.normalizePayment = function(responses){
     var ret = [],
         that = this,
         i = 0;
@@ -178,7 +178,7 @@
     return ret;
   };
 
-  PaysimpleGateway.prototype.searchPayments= function(params,callback){
+  UsaepayGateway.prototype.searchPayments= function(params,callback){
     var searchParams = [];
     if (params.custId){
       searchParams.push({
@@ -229,7 +229,7 @@
   /** 
    * Cancels a recurring payment by the planId
    */
-  PaysimpleGateway.prototype.cancelRecurringPayment = function(planId,callback){
+  UsaepayGateway.prototype.cancelRecurringPayment = function(planId,callback){
     var args = {
       CustNum: planId
     };
@@ -245,7 +245,7 @@
    * @param {hash} response
    * @return {hash} normalizedResponse
    */
-  PaysimpleGateway.prototype.normalizeCreditResponse = function(response){
+  UsaepayGateway.prototype.normalizeCreditResponse = function(response){
     return {
       status: response.UMstatus,
       authCode: response.UMauthCode,
@@ -265,7 +265,7 @@
    * @param {hash} response
    * @return {hash} normalizedResponse
    */
-  PaysimpleGateway.prototype.normalizeCheckResponse = function(response){
+  UsaepayGateway.prototype.normalizeCheckResponse = function(response){
     return {
       refNum: response.UMrefNum,
       status: response.UMstatus,
@@ -282,7 +282,7 @@
    * @param {hash} response
    * @return {hash} normalizedResponse
    */
-  PaysimpleGateway.prototype.normalizeRefundResponse = function(response){
+  UsaepayGateway.prototype.normalizeRefundResponse = function(response){
     return {
       status: response.UMstatus,
       authCode: response.UMauthCode,
@@ -296,7 +296,7 @@
    * Takes the paysimple payment response object and converts it into a generic,
    * normalized form to match the XMerchant interface.
    */
-  PaysimpleGateway.prototype.normalizePaymentResponse = function(response){
+  UsaepayGateway.prototype.normalizePaymentResponse = function(response){
     return {
       status: response.StatusCode.$value,
       result: response.ResultCode.$value,
@@ -312,7 +312,7 @@
     };
   };
 
-  PaysimpleGateway.prototype.pay = function(data,callback){
+  UsaepayGateway.prototype.pay = function(data,callback){
     console.log(data);
     var args = {
       Parameters: {
@@ -364,7 +364,7 @@
     });
   };
 
-  PaysimpleGateway.prototype.refund = function(paymentId,amount,callback){
+  UsaepayGateway.prototype.refund = function(paymentId,amount,callback){
     var args = {
       RefNum: paymentId,
       Amount: amount
@@ -382,7 +382,7 @@
    *   params:
    *      AccountHolder, Details, RecurringBilling
    */
-  PaysimpleGateway.prototype.addCreditData = function(args,data){
+  UsaepayGateway.prototype.addCreditData = function(args,data){
     args.Parameters.CreditCardData = {
       theAttrs: { 'xsi:type':"ns1:CreditCardData" },
       AvsStreet: data.billing.street,
@@ -399,7 +399,7 @@
    *   params:
    *      AccountHolder, Details, RecurringBilling
    */
-  PaysimpleGateway.prototype.addACHData = function(args,data){
+  UsaepayGateway.prototype.addACHData = function(args,data){
     var ach = data.ach;
     args.Parameters.Command = "Check:Sale";
     args.Parameters.CheckData = {
@@ -415,5 +415,5 @@
     };
   };
 
-  module.exports = PaysimpleGateway;
+  module.exports = UsaepayGateway;
 })();

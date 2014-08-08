@@ -4,17 +4,17 @@ A payment library for xCore
 
 Usage
 -------------
-First, create an xmerchant object and pass it your preferred payment gateway. For paysimple:
+First, create an xmerchant object and pass it your preferred payment gateway. For usaepay:
 
     var XMerchant = require('./xmerchant'),
-        PaysimpleGateway = require('./paysimple_gateway'),
+        UsaepayGateway = require('./usaepay_gateway'),
         xmerchant = new XMerchant(),
-        paysimple = new PaysimpleGateway();
+        usaepay = new UsaepayGateway();
 
-        paysimple.UMkey = 'your_key_here';
-        paysimple.pin = 'your_pin';
+        usaepay.UMkey = 'your_key_here';
+        usaepay.pin = 'your_pin';
 
-        xmerchant.setGateway(paysimple);
+        xmerchant.setGateway(usaepay);
 
 Next, use the pay function to create payments. 
 Create a single credit card payment:
