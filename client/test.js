@@ -1,6 +1,6 @@
 (function(){
-  var XMerchant = require('./xMerchant'),
-      PaysimpleGateway = require('./paysimple_gateway.js'),
+  var XMerchant = require('./xmerchant'),
+      PaysimpleGateway = require('./paysimple_gateway'),
       xmerch = new XMerchant(),
       paysimple = new PaysimpleGateway();
 
@@ -10,23 +10,31 @@
 
   var data = {
     type: 'credit',
-    fullName: 'Noah Prince', 
-    custId: 1,
+    custId: 3,
     amount: "9.00",
-    refNum: '60240760',
-    recurrence: "none",
-    start: "next", // YYYYMMDD
-    numLeft: "5",
+    recurrence: {
+      schedule: "daily",
+      start: "next", // YYYYMMDD
+      number: "5"
+    },    
+    billing: {
+      fullName: 'Noah Joseph Prince', 
+      zip: "90036",
+      street: "5900 Wilshire Blvd",
+      email: "nprince@pangeaeqity.com"
+    },
     card: {
       number: '4000100011112224',
       month: '09',
       year: '14', 
       verificationValue: '123',
-      type: 'visa',
-      zip: "90036",
-      street: "5900 Wilshire Blvd"
+      type: 'visa'
     }
   };
+
+  // var data = {
+  //   paymentId: 60251092
+  // };
 
   // // declined card
   // var data = {
@@ -45,10 +53,18 @@
 
   // var data = {
   //   type: "ach",
-  //   fullName: 'Noah Prince', 
-  //   routing: "987654321",
-  //   amount: "10",
-  //   account: "5555555"
+  //   fullName: 'Joseph Prince', 
+  //   custId: 2,
+  //   amount: "9.00",
+  //   refNum: '60240760',
+  //   // recurrence: "monthly",
+  //   // start: "next", // YYYYMMDD
+  //   // number: "5",
+  //   ach: {
+  //     routing: "987654301",
+  //     amount: "10",
+  //     account: "5555555"
+  //   }
   // };
 
   // var data = {
@@ -72,11 +88,16 @@
   //   street: "640 n LaSalle ste 638"
   // };
 
-  xmerch.pay(data,function(response){
-    console.log(response);
-  });
-
-  // xmerch.getRecurringPayments(1,function(response){
+  // xmerch.pay(data,function(response){
   //   console.log(response);
   // });
+
+  xmerch.searchPayments({ custId: 3, amount: '9'},function(response){
+    // xmerch.cancelRecurringPayment(response[0].planId,function(result){
+    //   console.log(result);
+    // });
+
+    console.log(response);
+
+  });
 })();
