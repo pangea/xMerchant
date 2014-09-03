@@ -1,7 +1,7 @@
 (function(){
   "use strict"
 
-  // Converts urlencoded form response data to json. I got this from stackoverflow  
+  // Converts urlencoded form response data to json. I got this from stackoverflow
   module.exports.form2Json = function(str)
   {
     var obj,i,pt,keys,j,ev;
