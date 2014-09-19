@@ -1,0 +1,13 @@
+{
+  "name": "xmerchant",
+  "author": {
+    "name": "Noah Prince",
+    "email": "npricne@pangeare.com"
+  },
+  "version": "1.0.0",
+  "main": "./client/xmerchant.js",
+  "dependencies": {
+    "soap": "^0.5.1",
+    "xmlhttprequest": "^1.6.0"
+  }
+}

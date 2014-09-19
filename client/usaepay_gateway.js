@@ -2,9 +2,9 @@
   var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest,
       helpers = require("./helpers"),
       soap = require('soap'),
-      soapUrl = "https://sandbox.usaepay.com/soap/gate/48F672CB/usaepay.wsdl";
-      // soapUrl = "https://sandbox.usaepay.com/soap/gate/DFBAABC3";
-      // soapUrl = "https://www.usaepay.com/soap/gate/48F672CB/usaepay.wsdl"; //TODO: update for prod 
+      soapUrl = "https://sandbox.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
+  // soapUrl = "https://sandbox.usaepay.com/soap/gate/DFBAABC3";
+  // soapUrl = "https://www.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
   
   function UsaepayGateway(){
   }
@@ -27,7 +27,7 @@
         clear = this.UMkey + seed + this.pin,
         crypto = require('crypto'),
         shasum = crypto.createHash('sha1');
-        shasum.update(clear);
+    shasum.update(clear);
 
     
     return {seed: seed, hash: shasum.digest('hex')};
@@ -49,9 +49,8 @@
         HashValue: shaHash.hash
       }
     };
-
     var wsdlOptions = {
-      attributesKey: 'theAttrs'
+      attributesKey: 'theAttrs',
       // endpoint: "https://sandbox.usaepay.com/soap/gate/DFBAABC3"
     };
     console.log(args);
@@ -312,6 +311,102 @@
     };
   };
 
+  /**
+   * Takes the paysimple payment response object and converts it into a generic,
+   * normalized form to match the XMerchant interface.
+   */
+  UsaepayGateway.prototype.normalizeAddCustomerResponse = function(response){
+    return {
+      planId: response.$value
+    };
+  };
+
+  UsaepayGateway.prototype.addCustomer = function(data,callback){
+    console.log(data);
+    var args = {
+      CustomerData: {
+        theAttrs: { 'xsi:type':"ns1:CustomerObject" },
+        CustomerID: data.custId,
+        BillingAddress: {
+          theAttrs: { 'xsi:type':"ns1:Address" },
+          FirstName: data.billing.fullName.split(' ').slice(0, -1).join(' '),
+          LastName: data.billing.fullName.split(' ').slice(-1).join(' '),
+          Street: data.billing.street,
+          Street2: data.billing.street2,
+          City: data.billing.city,
+          State: data.billing.state,
+          Zip: data.billing.zip,
+          Country: "United States",
+          Email: data.billing.email
+        },
+        PaymentMethods: {
+          theAttrs: { 
+            'xsi:type':"ns1:PaymentMethodArray"
+          },          
+          item: []
+        }
+      }
+    };
+    if (data.type === "ach"){
+      this.addCustomerACHData(args,data);
+    } else if (data.type === "credit"){
+      this.addCustomerCreditData(args,data);
+    } else{
+      throw "Type" + data.type + "is not supported by this gateway";
+    }
+    if (data.recurrence){
+      args.CustomerData.Enabled = true;
+      args.CustomerData.Schedule = data.recurrence.schedule;
+      args.CustomerData.Next = data.recurrence.start;
+      args.CustomerData.NumLeft = data.recurrence.number;
+      args.CustomerData.Amount = data.amount;
+      args.CustomerData.SendReceipt = true;
+    }
+
+    var that = this,
+        result;
+
+    this.makeSoapQuery(args,"addCustomer",function(result){ 
+      result = that.normalizeAddCustomerResponse(result.addCustomerReturn);
+      callback(result);
+    });
+  };
+
+  UsaepayGateway.prototype.quickUpdateCustomer = function(data,callback){
+    console.log(data);
+    var args = {
+      CustNum: data.CustNum,
+      UpdateData: {
+        theAttrs: { 
+          'xsi:type':"ns1:FieldValueArray"
+        },          
+        item: []
+      }
+    };
+
+    for (var k in data){
+      if (data.hasOwnProperty(k) && k !== "CustNum") {
+        args.UpdateData.item.push(
+          { 
+            theAttrs: { 'xsi:type':"ns1:FieldValue" },
+            Field: k, 
+            Value: data[k]
+          }
+        );
+      }
+    }
+
+    var that = this,
+        result;
+
+    this.makeSoapQuery(args,"quickUpdateCustomer",function(result){ 
+      result = that.normalizeAddCustomerResponse(result);
+      if(callback){
+        callback(result);
+      }
+    });
+  };
+
   UsaepayGateway.prototype.pay = function(data,callback){
     console.log(data);
     var args = {
@@ -319,6 +414,7 @@
         theAttrs: { 'xsi:type':"ns1:TransactionRequestObject" },
         AccountHolder: data.billing.fullName,
         CustomerID: data.custId,
+        CustReceipt: true,
         Details: {
           theAttrs: { 'xsi:type':"ns1:TransactionDetail" },
           Amount: data.amount
@@ -337,7 +433,13 @@
         }
       }
     };
-
+    if (data.type === "ach"){
+      this.addTransactionACHData(args,data);
+    } else if (data.type === "credit"){
+      this.addTransactionCreditData(args,data);
+    } else{
+      throw "Type" + data.type + "is not supported by this gateway";
+    }
     if (data.recurrence){
       args.Parameters.RecurringBilling =  {
         Schedule: data.recurrence.schedule,
@@ -347,23 +449,16 @@
         Enabled: true
       };
     }
-      
-    if (data.type === "ach"){
-      this.addACHData(args,data);
-    } else if (data.type === "credit"){
-      this.addCreditData(args,data);
-    } else{
-      throw "Type" + data.type + "is not supported by this gateway";
-    }
     
     var that = this,
         result;
-    this.makeSoapQuery(args,"runTransaction",function(result){
-        result = that.normalizePaymentResponse(result.runTransactionReturn);
-        callback(result);
+
+    this.makeSoapQuery(args,"runTransaction",function(result){ 
+      result = that.normalizePaymentResponse(result.runTransactionReturn);     
+      callback(result);
     });
   };
-
+  
   UsaepayGateway.prototype.refund = function(paymentId,amount,callback){
     var args = {
       RefNum: paymentId,
@@ -382,7 +477,7 @@
    *   params:
    *      AccountHolder, Details, RecurringBilling
    */
-  UsaepayGateway.prototype.addCreditData = function(args,data){
+  UsaepayGateway.prototype.addTransactionCreditData = function(args,data){
     args.Parameters.CreditCardData = {
       theAttrs: { 'xsi:type':"ns1:CreditCardData" },
       AvsStreet: data.billing.street,
@@ -399,7 +494,7 @@
    *   params:
    *      AccountHolder, Details, RecurringBilling
    */
-  UsaepayGateway.prototype.addACHData = function(args,data){
+  UsaepayGateway.prototype.addTransactionACHData = function(args,data){
     var ach = data.ach;
     args.Parameters.Command = "Check:Sale";
     args.Parameters.CheckData = {
@@ -413,6 +508,48 @@
       frontImage: ach.frontImage,
       backImage: ach.backImage
     };
+  };
+
+  /**
+   * Adds credit card information to the given SOAP args using the data provided
+   * @param {Object} args pre formatted SOAP object with 
+   *   params:
+   *     Details, BillingAddress, PaymentMethods
+   */
+  UsaepayGateway.prototype.addCustomerCreditData = function(args,data){
+    args.CustomerData.PaymentMethods.item.push(
+      {
+        theAttrs: { 'xsi:type':"ns1:PaymentMethod" },
+        AvsStreet: data.billing.street,
+        AvsZip: data.billing.zip,
+        CardCode: data.card.verificationValue,
+        CardNumber: data.card.number,
+        CardExpiration: data.card.month+data.card.year
+      }
+    );
+  };
+
+  /**
+   * Adds ach information to the given SOAP args using the data provided
+   * @param {Object} args pre formatted SOAP object with 
+   *   params:
+   *     Details, BillingAddress, PaymentMethods
+   */
+  UsaepayGateway.prototype.addCustomerACHData = function(args,data){
+    args.CustomerData.PaymentMethods.item.push(
+      {
+        theAttrs: { 'xsi:type':"ns1:PaymentMethod" },
+        CheckNumber: data.ach.check,
+        Routing: data.ach.routing,
+        Account: data.ach.account,
+        AccountType: data.ach.accountType,
+        DriversLicense: data.ach.driversLicense,
+        DriversLicenseState: data.ach.driversLicenseState,
+        recordType: data.ach.recordType,
+        frontImage: data.ach.frontImage,
+        backImage: data.ach.backImage
+      }
+    );
   };
 
   module.exports = UsaepayGateway;

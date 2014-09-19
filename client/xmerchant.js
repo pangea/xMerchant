@@ -9,6 +9,34 @@
   };
 
   /**
+   * Add a customer
+   * @param {Object} data 
+   * @param {function} callback First parameter is a hash including
+   * pertinant information such as the paymentId, planId, and status messages
+   */
+  XMerchant.prototype.addCustomer = function(data,callback){
+    if (!data.type){
+      throw "Must specify a type";
+    }
+
+    this.gateway.addCustomer(data,callback);
+  };
+
+  /**
+   * Quickly update a customer
+   * @param {Object} data 
+   * @param {function} callback First parameter is a hash including
+   * pertinant information such as the paymentId, planId, and status messages
+   */
+  XMerchant.prototype.quickUpdateCustomer = function(data,callback){
+    if (!data.CustNum){
+      throw "Must specify a Customer Number";
+    }
+
+    this.gateway.quickUpdateCustomer(data,callback);
+  };
+
+  /**
    * Make a payment
    * @param {Object} data 
    * @param {function} callback First parameter is a hash including
