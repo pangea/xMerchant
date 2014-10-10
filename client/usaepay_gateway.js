@@ -2,9 +2,10 @@
   var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest,
       helpers = require("./helpers"),
       soap = require('soap'),
-      soapUrl = "https://sandbox.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
-  // soapUrl = "https://sandbox.usaepay.com/soap/gate/DFBAABC3";
-  // soapUrl = "https://www.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
+      //SANDBOX
+      // soapUrl = "https://sandbox.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
+      //PROD
+      soapUrl = "https://www.usaepay.com/soap/gate/293C8EBA/usaepay.wsdl";
   
   function UsaepayGateway(){
   }
@@ -322,7 +323,6 @@
   };
 
   UsaepayGateway.prototype.addCustomer = function(data,callback){
-    console.log(data);
     var args = {
       CustomerData: {
         theAttrs: { 'xsi:type':"ns1:CustomerObject" },
@@ -365,7 +365,7 @@
 
     var that = this,
         result;
-
+    
     this.makeSoapQuery(args,"addCustomer",function(result){ 
       result = that.normalizeAddCustomerResponse(result.addCustomerReturn);
       callback(result);
@@ -373,7 +373,10 @@
   };
 
   UsaepayGateway.prototype.quickUpdateCustomer = function(data,callback){
+    console.log("############");
+    console.log("quickUpdateCustomer Data");
     console.log(data);
+    console.log("############");    
     var args = {
       CustNum: data.CustNum,
       UpdateData: {
@@ -398,7 +401,10 @@
 
     var that = this,
         result;
-
+    console.log("############");
+    console.log("quickUpdateCustomer Args");
+    console.log(args);
+    console.log("############");        
     this.makeSoapQuery(args,"quickUpdateCustomer",function(result){ 
       result = that.normalizeAddCustomerResponse(result);
       if(callback){
